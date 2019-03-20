@@ -99,7 +99,7 @@ static void free_one_table(unsigned long * page_dir)
 	page_table = (unsigned long *) (pg_table & PAGE_MASK);
 	for (j = 0 ; j < PTRS_PER_PAGE ; j++,page_table++) {
 		unsigned long pg = *page_table;
-		
+
 		if (!pg)
 			continue;
 		*page_table = 0;
@@ -899,7 +899,7 @@ asmlinkage void do_page_fault(struct pt_regs *regs, unsigned long error_code)
 				bit = (address - 0xA0000) >> PAGE_SHIFT;
 				if (bit < 32)
 					current->screen_bitmap |= 1 << bit;
-			} else 
+			} else
 				user_esp = regs->esp;
 		}
 		if (error_code & 1)
@@ -1006,6 +1006,8 @@ void show_mem(void)
  * This routines also unmaps the page at virtual kernel address 0, so
  * that we can trap those pesky NULL-reference errors in the kernel.
  */
+// @param start_mem: 内存开始地址
+// @param end_mem: 物理内存最大地址
 unsigned long paging_init(unsigned long start_mem, unsigned long end_mem)
 {
 	unsigned long * pg_dir;
@@ -1024,15 +1026,15 @@ unsigned long paging_init(unsigned long start_mem, unsigned long end_mem)
 #endif
 	start_mem = PAGE_ALIGN(start_mem);
 	address = 0;
-	pg_dir = swapper_pg_dir;
+	pg_dir = swapper_pg_dir; // swapper_pg_dir定义在 boot/head.S 文件中
 	while (address < end_mem) {
-		tmp = *(pg_dir + 768);		/* at virtual addr 0xC0000000 */
+		tmp = *(pg_dir + 768); /* at virtual addr 0xC0000000 */ // 把物理地址0~1GB映射到虚拟地址3GB~4GB处
 		if (!tmp) {
 			tmp = start_mem | PAGE_TABLE;
 			*(pg_dir + 768) = tmp;
 			start_mem += PAGE_SIZE;
 		}
-		*pg_dir = tmp;			/* also map it in at 0x0000000 for init */
+		*pg_dir = tmp; /* also map it in at 0x0000000 for init */
 		pg_dir++;
 		pg_table = (unsigned long *) (tmp & PAGE_MASK);
 		for (tmp = 0 ; tmp < PTRS_PER_PAGE ; tmp++,pg_table++) {
@@ -1201,7 +1203,7 @@ void file_mmap_free(struct vm_area_struct * area)
 		iput(area->vm_inode);
 #if 0
 	if (area->vm_inode)
-		printk("Free inode %x:%d (%d)\n",area->vm_inode->i_dev, 
+		printk("Free inode %x:%d (%d)\n",area->vm_inode->i_dev,
 				 area->vm_inode->i_ino, area->vm_inode->i_count);
 #endif
 }
@@ -1210,8 +1212,8 @@ void file_mmap_free(struct vm_area_struct * area)
  * Compare the contents of the mmap entries, and decide if we are allowed to
  * share the pages
  */
-int file_mmap_share(struct vm_area_struct * area1, 
-		    struct vm_area_struct * area2, 
+int file_mmap_share(struct vm_area_struct * area1,
+		    struct vm_area_struct * area2,
 		    unsigned long address)
 {
 	if (area1->vm_inode != area2->vm_inode)

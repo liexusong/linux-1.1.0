@@ -66,7 +66,7 @@ int need_resched = 0;
 int hard_math = 0;		/* set by boot/head.S */
 int x86 = 0;			/* set by boot/head.S to 3 or 4 */
 int ignore_irq13 = 0;		/* set if exception 16 works */
-int wp_works_ok = 0;		/* set if paging hardware honours WP */ 
+int wp_works_ok = 0;		/* set if paging hardware honours WP */
 
 /*
  * Bus types ..
@@ -116,7 +116,7 @@ asmlinkage void math_state_restore(void)
 	if (last_task_used_math == current)
 		return;
 	timer_table[COPRO_TIMER].expires = jiffies+50;
-	timer_active |= 1<<COPRO_TIMER;	
+	timer_active |= 1<<COPRO_TIMER;
 	if (last_task_used_math)
 		__asm__("fnsave %0":"=m" (last_task_used_math->tss.i387));
 	else
@@ -533,7 +533,7 @@ static void timer_bh(void * unused)
 		cli();
 	}
 	sti();
-	
+
 	for (mask = 1, tp = timer_table+0 ; mask ; tp++,mask += mask) {
 		if (mask > timer_active)
 			break;
@@ -578,7 +578,7 @@ static void do_timer(struct pt_regs * regs)
 
 	if (time_adjust)
 	{
-	    /* We are doing an adjtime thing. 
+	    /* We are doing an adjtime thing.
 	     *
 	     * Modify the value of the tick for next time.
 	     * Note that a positive delta means we want the clock
@@ -593,7 +593,7 @@ static void do_timer(struct pt_regs * regs)
 	       time_adjust_step = -tickadj;
 	     else
 	       time_adjust_step = time_adjust;
-	     
+
 	    /* Reduce by this step the amount of time left  */
 	    time_adjust -= time_adjust_step;
 	}
@@ -792,9 +792,10 @@ void sched_init(void)
 	__asm__("pushfl ; andl $0xffffbfff,(%esp) ; popfl");
 	load_TR(0);
 	load_ldt(0);
+	// 设置时钟中断周期
 	outb_p(0x34,0x43);		/* binary, mode 2, LSB/MSB, ch 0 */
 	outb_p(LATCH & 0xff , 0x40);	/* LSB */
 	outb(LATCH >> 8 , 0x40);	/* MSB */
-	if (request_irq(TIMER_IRQ,(void (*)(int)) do_timer)!=0)
+	if (request_irq(TIMER_IRQ,(void (*)(int)) do_timer)!=0) // 设置时钟中断的下半部分处理函数
 		panic("Could not allocate timer IRQ!");
 }

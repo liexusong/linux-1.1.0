@@ -151,7 +151,7 @@ static char fpu_error = 0;
 
 static char command_line[COMMAND_LINE_SIZE] = { 0, };
 
-char *get_options(char *str, int *ints) 
+char *get_options(char *str, int *ints)
 {
 	char *cur = str;
 	int i=1;
@@ -249,7 +249,7 @@ static void calibrate_delay(void)
 	}
 	printk("failed\n");
 }
-	
+
 
 /*
  * This is a simple kernel command line parsing function: it parses
@@ -311,7 +311,7 @@ static void parse_options(char *line)
 		/*
 		 * Then check if it's an environment variable or
 		 * an option.
-		 */	
+		 */
 		if (strchr(line,'=')) {
 			if (envs >= MAX_INIT_ENVS)
 				break;
@@ -365,11 +365,11 @@ asmlinkage void start_kernel(void)
  * enable them
  */
 	set_call_gate(&default_ldt,lcall7);
- 	ROOT_DEV = ORIG_ROOT_DEV;
+ 	ROOT_DEV = ORIG_ROOT_DEV; // 根设备号
  	drive_info = DRIVE_INFO;
  	screen_info = SCREEN_INFO;
 	aux_device_present = AUX_DEVICE_INFO;
-	memory_end = (1<<20) + (EXT_MEM_K<<10);
+	memory_end = (1<<20) + (EXT_MEM_K<<10); // 真实物理内存大小
 	memory_end &= PAGE_MASK;
 	ramdisk_size = RAMDISK_SIZE;
 	copy_options(command_line,COMMAND_LINE);
@@ -379,7 +379,7 @@ asmlinkage void start_kernel(void)
 #endif
 	if (MOUNT_ROOT_RDONLY)
 		root_mountflags |= MS_RDONLY;
-	if ((unsigned long)&end >= (1024*1024)) {
+	if ((unsigned long)&end >= (1024*1024)) { // 如果内核大于1M
 		memory_start = (unsigned long) &end;
 		low_memory_start = PAGE_SIZE;
 	} else {
@@ -387,13 +387,13 @@ asmlinkage void start_kernel(void)
 		low_memory_start = (unsigned long) &end;
 	}
 	low_memory_start = PAGE_ALIGN(low_memory_start);
-	memory_start = paging_init(memory_start,memory_end);
+	memory_start = paging_init(memory_start, memory_end); // 建立内核空间映射(在mm/memory.c中)
 	if (strncmp((char*)0x0FFFD9, "EISA", 4) == 0)
 		EISA_bus = 1;
-	trap_init();
-	init_IRQ();
-	sched_init();
-	parse_options(command_line);
+	trap_init();   // 初始化陷阱门
+	init_IRQ();    // 初始化中断请求
+	sched_init();  // 设置tss和ldt等, 并且设置调用门
+	parse_options(command_line); // 处理参数选项
 #ifdef CONFIG_PROFILE
 	prof_buffer = (unsigned long *) memory_start;
 	prof_len = (unsigned long) &end;
@@ -422,7 +422,7 @@ asmlinkage void start_kernel(void)
 	ipc_init();
 #endif
 	sti();
-	
+
 	/*
 	 * check if exception 16 works correctly.. This is truly evil
 	 * code: it disables the high 8 interrupts to make sure that
