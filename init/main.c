@@ -355,6 +355,9 @@ static void copro_timeout(void)
 	outb_p(0,0xf0);
 }
 
+//
+// 内核初始化入口(从head.s进入)
+//
 asmlinkage void start_kernel(void)
 {
 /*

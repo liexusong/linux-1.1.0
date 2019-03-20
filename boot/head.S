@@ -30,12 +30,12 @@
  */
 startup_32:
 	cld
-	movl $(KERNEL_DS),%eax
+	movl $(KERNEL_DS),%eax // 把内核数据段赋值给eax
 	mov %ax,%ds
 	mov %ax,%es
 	mov %ax,%fs
 	mov %ax,%gs
-	lss _stack_start,%esp
+	lss _stack_start,%esp  // 设置栈空间
 /*
  * Clear BSS first so that there are no surprises...
  */
@@ -160,10 +160,11 @@ is386:	pushl %ecx		# restore original EFLAGS
 	pushl %eax
 	pushl %eax
 	cld			# gcc2 wants the direction flag cleared at all times
-	call _start_kernel
+	call _start_kernel  // 调用 start_kernel() 函数初始化内核 (在文件init/mian.c中)
 L6:
-	jmp L6			# main should never return here, but
+	jmp L6		# main should never return here, but
 				# just in case, we know what happens.
+				// 按道理是不会进入这里的
 
 /*
  * We depend on ET to be correct. This checks for 287/387.
