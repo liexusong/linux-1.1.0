@@ -109,7 +109,7 @@ end_check:
 	FD_ZERO(res_in);
 	FD_ZERO(res_out);
 	FD_ZERO(res_ex);
-	count = 0;
+	count = 0; // active状态的文件个数
 	wait_table.nr = 0;
 	wait_table.entry = entry;
 	wait = &wait_table;
@@ -206,15 +206,15 @@ asmlinkage int sys_select( unsigned long *buffer )
 	i = verify_area(VERIFY_READ, buffer, 20);
 	if (i)
 		return i;
-	n = get_fs_long(buffer++);
+	n = get_fs_long(buffer++); // 文件句柄的个数
 	if (n < 0)
 		return -EINVAL;
 	if (n > NR_OPEN)
 		n = NR_OPEN;
-	inp = (fd_set *) get_fs_long(buffer++);
-	outp = (fd_set *) get_fs_long(buffer++);
-	exp = (fd_set *) get_fs_long(buffer++);
-	tvp = (struct timeval *) get_fs_long(buffer);
+	inp = (fd_set *) get_fs_long(buffer++);  // 监听输入的文件句柄集合
+	outp = (fd_set *) get_fs_long(buffer++); // 监听输出的文件句柄集合
+	exp = (fd_set *) get_fs_long(buffer++);  // 监听异常的文件句柄集合
+	tvp = (struct timeval *) get_fs_long(buffer); // 超时时间
 	if ((i = get_fd_set(n, inp, &in)) ||
 	    (i = get_fd_set(n, outp, &out)) ||
 	    (i = get_fd_set(n, exp, &ex))) return i;

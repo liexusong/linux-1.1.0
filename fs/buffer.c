@@ -451,10 +451,11 @@ struct buffer_head * getblk(dev_t dev, int block, int size)
 	static int grow_size = 0;
 
 repeat:
+	// 先从缓存hash表中找
 	bh = get_hash_table(dev, block, size);
 	if (bh) {
 		if (bh->b_uptodate && !bh->b_dirt)
-			put_last_free(bh);
+			put_last_free(bh); // 放置到free_list的尾部
 		return bh;
 	}
 	grow_size -= size;
@@ -465,6 +466,7 @@ repeat:
 	buffers = nr_buffers;
 	bh = NULL;
 
+	// 先从free_list队列中找
 	for (tmp = free_list; buffers-- > 0 ; tmp = tmp->b_next_free) {
 		if (tmp->b_count || tmp->b_size != size)
 			continue;
@@ -484,7 +486,7 @@ repeat:
 #endif
 	}
 
-	if (!bh) {
+	if (!bh) { // 如果没有空闲的buffer, 那么从内存中申请
 		if (nr_free_pages > 5)
 			if (grow_buffers(GFP_BUFFER, size))
 				goto repeat;
@@ -619,7 +621,7 @@ static void get_more_buffer_heads(void)
 	if(! (bh = (struct buffer_head*) get_free_page(GFP_BUFFER)))
 		return;
 
-	for (nr_buffer_heads+=i=PAGE_SIZE/sizeof*bh ; i>0; i--) {
+	for (nr_buffer_heads += i = PAGE_SIZE/sizeof(*bh) ; i>0; i--) {
 		bh->b_next_free = unused_list;	/* only make link */
 		unused_list = bh++;
 	}
@@ -655,7 +657,7 @@ static struct buffer_head * create_buffers(unsigned long page, unsigned long siz
 	head = NULL;
 	offset = PAGE_SIZE;
 	while ((offset -= size) < PAGE_SIZE) {
-		bh = get_unused_buffer_head();
+		bh = get_unused_buffer_head(); // 获取一个buffer_head
 		if (!bh)
 			goto no_grow;
 		bh->b_this_page = head;
@@ -870,7 +872,7 @@ static int grow_buffers(int pri, int size)
 		printk("VFS: grow_buffers: size = %d\n",size);
 		return 0;
 	}
-	if(!(page = __get_free_page(pri)))
+	if(!(page = __get_free_page(pri))) // 获取一个内存页
 		return 0;
 	bh = create_buffers(page, size);
 	if (!bh) {
@@ -879,7 +881,7 @@ static int grow_buffers(int pri, int size)
 	}
 	tmp = bh;
 	while (1) {
-		if (free_list) {
+		if (free_list) { // 连接到free_list中
 			tmp->b_next_free = free_list;
 			tmp->b_prev_free = free_list->b_prev_free;
 			free_list->b_prev_free->b_next_free = tmp;

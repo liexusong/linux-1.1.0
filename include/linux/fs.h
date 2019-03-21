@@ -158,17 +158,17 @@ struct buffer_head {
 #include <linux/sysv_fs_i.h>
 
 struct inode {
-	dev_t		i_dev;
+	dev_t			i_dev;
 	unsigned long	i_ino;
-	umode_t		i_mode;
-	nlink_t		i_nlink;
-	uid_t		i_uid;
-	gid_t		i_gid;
-	dev_t		i_rdev;
-	off_t		i_size;
-	time_t		i_atime;
-	time_t		i_mtime;
-	time_t		i_ctime;
+	umode_t			i_mode;
+	nlink_t			i_nlink;
+	uid_t			i_uid;
+	gid_t			i_gid;
+	dev_t			i_rdev;
+	off_t			i_size;
+	time_t			i_atime;
+	time_t			i_mtime;
+	time_t			i_ctime;
 	unsigned long	i_blksize;
 	unsigned long	i_blocks;
 	struct semaphore i_sem;

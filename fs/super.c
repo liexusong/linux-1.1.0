@@ -133,15 +133,16 @@ static struct super_block * read_super(dev_t dev,char *name,int flags,
 
 	if (!dev)
 		return NULL;
-	check_disk_change(dev);
-	s = get_super(dev);
-	if (s)
+	check_disk_change(dev); // 检查软盘是否换了
+	s = get_super(dev);     // 从缓存中读取超级块
+	if (s) // 如果缓存中已经存在, 返回就可以了
 		return s;
-	if (!(type = get_fs_type(name))) {
+	if (!(type = get_fs_type(name))) { // 获取指定文件系统的操作方法
 		printk("VFS: on device %d/%d: get_fs_type(%s) failed\n",
 						MAJOR(dev), MINOR(dev), name);
 		return NULL;
 	}
+	// 获取一个空闲的超级块对象
 	for (s = 0+super_blocks ;; s++) {
 		if (s >= NR_SUPER+super_blocks)
 			return NULL;
@@ -150,7 +151,7 @@ static struct super_block * read_super(dev_t dev,char *name,int flags,
 	}
 	s->s_dev = dev;
 	s->s_flags = flags;
-	if (!type->read_super(s,data, silent)) {
+	if (!type->read_super(s,data, silent)) { // 开始读取超级块内容(对于如果使用minix文件系统的话, 那么这里调用的就是 minix_read_super)
 		s->s_dev = 0;
 		return NULL;
 	}
@@ -512,21 +513,21 @@ void mount_root(void)
 
 	memset(super_blocks, 0, sizeof(super_blocks));
 	fcntl_init_locks();
-	if (MAJOR(ROOT_DEV) == FLOPPY_MAJOR) {
+	if (MAJOR(ROOT_DEV) == FLOPPY_MAJOR) { // 如果根设备是软盘, 需要按enter键确认
 		printk(KERN_NOTICE "VFS: Insert root floppy and press ENTER\n");
 		wait_for_keypress();
 	}
 	for (fs_type = file_systems; fs_type->read_super; fs_type++) {
 		if (!fs_type->requires_dev)
 			continue;
-		sb = read_super(ROOT_DEV,fs_type->name,root_mountflags,NULL,1);
+		sb = read_super(ROOT_DEV, fs_type->name, root_mountflags, NULL, 1); // 读取挂载设备的文件系统超级块
 		if (sb) {
 			inode = sb->s_mounted;
 			inode->i_count += 3 ;	/* NOTE! it is logically used 4 times, not 1 */
 			sb->s_covered = inode;
 			sb->s_flags = root_mountflags;
-			current->pwd = inode;
-			current->root = inode;
+			current->pwd = inode;  // 设置当前工作目录的inode
+			current->root = inode; // 设置跟目录的inode
 			printk ("VFS: Mounted root (%s filesystem)%s.\n",
 				fs_type->name,
 				(sb->s_flags & MS_RDONLY) ? " readonly" : "");

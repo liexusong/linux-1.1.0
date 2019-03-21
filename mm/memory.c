@@ -1065,11 +1065,11 @@ void mem_init(unsigned long start_low_mem,
 	start_mem +=  0x0000000f;
 	start_mem &= ~0x0000000f;
 	tmp = MAP_NR(end_mem);
-	mem_map = (unsigned short *) start_mem;
+	mem_map = (unsigned short *) start_mem;  // 内存页管理位图(每个short代表一个内存页, 0代表空闲, 大于0代表已在使用)
 	p = mem_map + tmp;
 	start_mem = (unsigned long) p;
 	while (p > mem_map)
-		*--p = MAP_PAGE_RESERVED;
+		*--p = MAP_PAGE_RESERVED; // 设置内存页为保留
 
 	/* set up the free-area data structures */
 	for (mask = PAGE_MASK, tmp = 0 ; tmp < NR_MEM_LISTS ; tmp++, mask <<= 1) {

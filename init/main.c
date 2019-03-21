@@ -400,28 +400,28 @@ asmlinkage void start_kernel(void)
 	prof_len >>= 2;
 	memory_start += prof_len * sizeof(unsigned long);
 #endif
-	memory_start = kmalloc_init(memory_start,memory_end);
-	memory_start = chr_dev_init(memory_start,memory_end);
-	memory_start = blk_dev_init(memory_start,memory_end);
-	sti();
+	memory_start = kmalloc_init(memory_start,memory_end); // 初始化小内存分配器
+	memory_start = chr_dev_init(memory_start,memory_end); // 初始化字符设备
+	memory_start = blk_dev_init(memory_start,memory_end); // 初始化块设备
+	sti(); // 关闭中断
 	calibrate_delay();
 #ifdef CONFIG_INET
-	memory_start = net_dev_init(memory_start,memory_end);
+	memory_start = net_dev_init(memory_start,memory_end); // 初始化网络设备
 #endif
 #ifdef CONFIG_SCSI
-	memory_start = scsi_dev_init(memory_start,memory_end);
+	memory_start = scsi_dev_init(memory_start,memory_end); // 初始化小型计算机系统接口设备
 #endif
-	memory_start = inode_init(memory_start,memory_end);
-	memory_start = file_table_init(memory_start,memory_end);
-	mem_init(low_memory_start,memory_start,memory_end);
-	buffer_init();
-	time_init();
-	floppy_init();
-	sock_init();
+	memory_start = inode_init(memory_start,memory_end);      // 初始化inode哈希表
+	memory_start = file_table_init(memory_start,memory_end); // 初始化file结构空闲链表
+	mem_init(low_memory_start,memory_start,memory_end);      // 初始化内存页管理机制
+	buffer_init(); // 初始化IO缓冲对象
+	time_init();   // 初始化系统时间
+	floppy_init(); // 初始化软盘
+	sock_init();   // 初始化socket相关数据结构
 #ifdef CONFIG_SYSVIPC
-	ipc_init();
+	ipc_init();    // 初始化进程间通信环境
 #endif
-	sti();
+	sti();         // 打开中断
 
 	/*
 	 * check if exception 16 works correctly.. This is truly evil
@@ -460,9 +460,9 @@ asmlinkage void start_kernel(void)
 	system_utsname.machine[1] = '0' + x86;
 	printk(linux_banner);
 
-	move_to_user_mode();
+	move_to_user_mode();  // 切换到用户态空间
 	if (!fork())		/* we count on this going ok */
-		init();
+		init();           // 执行init进程
 /*
  * task[0] is meant to be used as an "idle" task: it may not sleep, but
  * it might do some general things like count free pages or it could be
@@ -473,7 +473,7 @@ asmlinkage void start_kernel(void)
  * Right now task[0] just does a infinite idle loop.
  */
 	for(;;)
-		idle();
+		idle(); // 这个就是有名的idle进程
 }
 
 static int printf(const char *fmt, ...)
@@ -491,7 +491,7 @@ void init(void)
 {
 	int pid,i;
 
-	setup((void *) &drive_info);
+	setup((void *) &drive_info);  // 调用系统调用(sys_setup(), 在drivers/block/genhd.c文件中)
 	sprintf(term, "TERM=con%dx%d", ORIG_VIDEO_COLS, ORIG_VIDEO_LINES);
 	(void) open("/dev/tty1",O_RDWR,0);
 	(void) dup(0);

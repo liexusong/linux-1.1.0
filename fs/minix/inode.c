@@ -122,7 +122,7 @@ struct super_block *minix_read_super(struct super_block *s,void *data,
 	if (32 != sizeof (struct minix_inode))
 		panic("bad i-node size");
 	lock_super(s);
-	if (!(bh = bread(dev,1,BLOCK_SIZE))) {
+	if (!(bh = bread(dev,1,BLOCK_SIZE))) { // 读取设备的第一个块
 		s->s_dev=0;
 		unlock_super(s);
 		printk("MINIX-fs: unable to read superblock\n");
@@ -188,7 +188,7 @@ struct super_block *minix_read_super(struct super_block *s,void *data,
 	/* set up enough so that it can read an inode */
 	s->s_dev = dev;
 	s->s_op = &minix_sops;
-	s->s_mounted = iget(s,MINIX_ROOT_INO);
+	s->s_mounted = iget(s,MINIX_ROOT_INO); // 获取根目录的inode
 	if (!s->s_mounted) {
 		s->s_dev = 0;
 		brelse(bh);
