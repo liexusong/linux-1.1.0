@@ -300,6 +300,9 @@ void sync_inodes(dev_t dev)
 	}
 }
 
+//
+// 释放一个inode结构
+//
 void iput(struct inode * inode)
 {
 	if (!inode)
@@ -340,6 +343,9 @@ repeat:
 	return;
 }
 
+//
+// 获取一个空闲的inode结构
+//
 struct inode * get_empty_inode(void)
 {
 	struct inode * inode, * best;
@@ -393,6 +399,9 @@ repeat:
 	return inode;
 }
 
+//
+// 获取一个pipe(管道)的inode
+//
 struct inode * get_pipe_inode(void)
 {
 	struct inode * inode;
@@ -424,6 +433,9 @@ struct inode * iget(struct super_block * sb,int nr)
 	return __iget(sb,nr,1);
 }
 
+//
+// 通过文件系统超级块和inode号获取inode对象(超级块对象有个read_inode()的操作)
+//
 struct inode * __iget(struct super_block * sb, int nr, int crossmntp)
 {
 	static struct wait_queue * update_wait = NULL;
@@ -453,8 +465,8 @@ repeat:
 	inode->i_ino = nr;
 	inode->i_flags = sb->s_flags;
 	put_last_free(inode);
-	insert_inode_hash(inode);
-	read_inode(inode);
+	insert_inode_hash(inode); // 把添加inode到哈希表中
+	read_inode(inode);        // 通过super_block->s_op->read_inode()读取inode的内容
 	goto return_it;
 
 found_it:
@@ -493,13 +505,14 @@ static void __wait_on_inode(struct inode * inode)
 {
 	struct wait_queue wait = { current, NULL };
 
-	add_wait_queue(&inode->i_wait, &wait);
+	add_wait_queue(&inode->i_wait, &wait); // 把当前进程添加到inode的等待队列中
 repeat:
 	current->state = TASK_UNINTERRUPTIBLE;
 	if (inode->i_lock) {
-		schedule();
+		schedule(); // 开始调度
 		goto repeat;
 	}
+	// 到这里代表进程被唤醒了
 	remove_wait_queue(&inode->i_wait, &wait);
 	current->state = TASK_RUNNING;
 }
